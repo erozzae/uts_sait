@@ -1,0 +1,197 @@
+
+
+<?php
+require_once "config.php";
+$request_method=$_SERVER["REQUEST_METHOD"];
+switch ($request_method) {
+   case 'GET':
+         if(!empty($_GET["nim"]))
+         {
+            $id=intval($_GET["nim"]);
+            get_mhs($id);
+         }
+         else
+         {
+            get_mhss();
+         }
+         break;
+   case 'POST':
+         if(!empty($_GET["nim"]))
+         {
+            $id=intval($_GET["nim"]);
+            update_mhs($id);
+         }
+         else
+         {
+            insert_mhs();
+         }     
+         break; 
+   case 'DELETE':
+          $id=intval($_GET["nim"]);
+            delete_mhs($id);
+            break;
+   default:
+      // Invalid Request Method
+         header("HTTP/1.0 405 Method Not Allowed");
+         break;
+      break;
+ }
+
+
+
+   function get_mhss()
+   {
+      global $mysqli;
+      $query="SELECT mahasiswa.nim,nama,alamat,tanggal_lahir,matakuliah.kode_mk, matakuliah.nama_mk,sks,nilai
+      FROM mahasiswa
+      JOIN perkuliahan
+      ON mahasiswa.nim = perkuliahan.nim
+      JOIN matakuliah
+      ON matakuliah.kode_mk = perkuliahan.kode_mk
+      ";
+      $data=array();
+      $result=$mysqli->query($query);
+      while($row=mysqli_fetch_object($result))
+      {
+         $data[]=$row;
+      }
+      $response=array(
+                     'status' => 1,
+                     'message' =>'Get List Mahasiswa Successfully.',
+                     'data' => $data
+                  );
+      header('Content-Type: application/json');
+      echo json_encode($response);
+   }
+ 
+   function get_mhs($id=null)
+   {
+      global $mysqli;
+      $query="SELECT mahasiswa.nim,nama,alamat,tanggal_lahir,matakuliah.kode_mk, matakuliah.nama_mk,sks,nilai
+      FROM mahasiswa
+      JOIN perkuliahan
+      ON mahasiswa.nim = perkuliahan.nim
+      JOIN matakuliah
+      ON matakuliah.kode_mk = perkuliahan.kode_mk";
+      if($id != null)
+      {
+         $query.=" WHERE mahasiswa.nim=".$id." LIMIT 1";
+      }
+      $data=array();
+      $result=$mysqli->query($query);
+      while($row=mysqli_fetch_object($result))
+      {
+         $data[]=$row;
+      }
+      $response=array(
+                     'status' => 1,
+                     'message' =>'Get Mahasiswa Successfully.',
+                     'data' => $data
+                  );
+      header('Content-Type: application/json');
+      echo json_encode($response);
+        
+   }
+ 
+   function insert_mhs()
+      {
+         global $mysqli;
+         $arrcheckpost = array('nim' => '', 'nama' => '','alamat' => '','tanggal_lahir' => '');
+         $hitung = count(array_intersect_key($_POST, $arrcheckpost));
+         if($hitung == count($arrcheckpost)){
+          
+               $result = mysqli_query($mysqli, "INSERT INTO mahasiswa SET
+               nim = '$_POST[nim]',
+               nama = '$_POST[nama]',
+               alamat = '$_POST[alamat]',
+               tanggal_lahir = '$_POST[tanggal_lahir]'
+               ");
+                
+               if($result)
+               {
+                  $response=array(
+                     'status' => 1,
+                     'message' =>'Mahasiswa Added Successfully.'
+                  );
+               }
+               else
+               {
+                  $response=array(
+                     'status' => 0,
+                     'message' =>'Mahasiswa Addition Failed.'
+                  );
+               }
+         }else{
+            $response=array(
+                     'status' => 0,
+                     'message' =>'Parameter Do Not Match'
+                  );
+         }
+         header('Content-Type: application/json');
+         echo json_encode($response);
+      }
+ 
+//    function update_mhs($id)
+//       {
+//          global $mysqli;
+//          $arrcheckpost = array('nama' => '','gender' => '','jurusan' => '');
+//          $hitung = count(array_intersect_key($_POST, $arrcheckpost));
+//          if($hitung == count($arrcheckpost)){
+          
+//               $result = mysqli_query($mysqli, "UPDATE data_mhs SET
+//               nama = '$_POST[nama]',
+//               gender = '$_POST[gender]',
+//               jurusan = '$_POST[jurusan]'
+//               WHERE nim='$id'");
+          
+//             if($result)
+//             {
+//                $response=array(
+//                   'status' => 1,
+//                   'message' =>'Mahasiswa Updated Successfully.'
+//                );
+//             }
+//             else
+//             {
+//                $response=array(
+//                   'status' => 0,
+//                   'message' =>'Mahasiswa Updation Failed.'
+//                );
+//             }
+//          }else{
+//             $response=array(
+//                      'status' => 0,
+//                      'message' =>'Parameter Do Not Match'
+//                   );
+//          }
+//          header('Content-Type: application/json');
+//          echo json_encode($response);
+//       }
+ 
+//    function delete_mhs($id)
+//    {
+//       global $mysqli;
+//       $query="DELETE FROM data_mhs WHERE nim=".$id;
+//       if(mysqli_query($mysqli, $query))
+//       {
+//          $response=array(
+//             'status' => 1,
+//             'message' =>'Mahasiswa Deleted Successfully.'
+//          );
+//       }
+//       else
+//       {
+//          $response=array(
+//             'status' => 0,
+//             'message' =>'Mahasiswa Deletion Failed.'
+//          );
+//       }
+//       header('Content-Type: application/json');
+//       echo json_encode($response);
+//    }
+
+
+   
+                     
+ 
+?> 
